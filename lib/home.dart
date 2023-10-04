@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:productivity_app/homeComponant/FetchHabit.dart';
 import 'package:productivity_app/homeComponant/myDateList.dart';
 import './const/Alldate.dart';
 class Home extends StatefulWidget {
@@ -32,7 +32,7 @@ class _HomeState extends State<Home> {
             Column(
               children: [
                 Text('$appBarDay'),
-                Text("${DateFormat")
+                // Text('${DateFormat")
               ],
             ),
             Row(
@@ -52,16 +52,18 @@ class _HomeState extends State<Home> {
               myDate: myDate,
               appBarDay: appBarDay,
               onAppBarDayChanged: (newAppBarDay) {
-                // setState(() {
-                //   appBarDay = newAppBarDay; // Update appBarDay in the Home widget.
-                // });
+                setState(() {
+                  appBarDay = newAppBarDay; // Update appBarDay in the Home widget.
+                });
               },
             ),
             /*end call another page*/
+            Text("k: ${appBarDay}"),
+            FetchHabit(date1: appBarDay)
 
-            Text("data")
           ],
         ),
+
         )
     );
   }
