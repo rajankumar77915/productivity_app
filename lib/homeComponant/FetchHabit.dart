@@ -1,102 +1,218 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:productivity_app/env.dart';
+import 'package:productivity_app/model/task.dart';
 
 class FetchHabit extends StatefulWidget {
-  const FetchHabit({super.key, required this.date1});
+  const FetchHabit({Key? key, required this.date1});
 
-  //according to date fetch that day schedule
-  final int date1;
+  // according to date fetch that day schedule
+  final DateTime date1;
 
   @override
   State<FetchHabit> createState() => _FetchHabitState(date1: date1);
 }
 
 class _FetchHabitState extends State<FetchHabit> {
-  final int date1;
-  bool isChecked = false;
-
+  DateTime date1;
   _FetchHabitState({required this.date1});
+
+  Future<List<TaskData>> fetchTaskData() async {
+    final obj = {
+      "userId": "652c466d743c4b3b92204504",
+      "date1": widget.date1.toIso8601String(),
+    };
+
+    final response = await http.post(
+      Uri.parse('$api/api/v1/task/getTask'),
+      body: jsonEncode(obj),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      List<TaskData> taskDataList=[];
+      var  data = jsonDecode(response.body)['tasks'];
+
+      print(data);
+      try {
+      data.forEach((ele){
+        List<TaskStatus> ts=[];
+        try {
+           ts.add( (ele["status"]));
+        }catch(e){
+          print("e r r $e");
+        }
+          TaskData t=TaskData(id: ele["_id"],
+              title: ele["title"],
+              subTitle: ele["subTitle"],
+              dateTime: ele["dateTime"],
+              status: ts,
+              scheduleType: ele["scheduleType"],
+
+              selectedDateText: ele["selectedDateText"],
+              user: ele["user"]);
+          taskDataList.add(t);
+      });
+
+
+      print("Success status 200: $data");
+
+        return  taskDataList;
+      }catch(error){
+        print("eeeeeeeeeeerrrrrrrrrrrrrrrooooooooooorrrrrrrrrrrrrrrrrrrrrrrrrr $error");
+      }
+      return [];
+    } else {
+      throw Exception('Failed to fetch task data');
+    }
+  }
+
+
+
+
+  Future<void> updateTaskStatus(String taskId, bool status, DateTime date) async {
+    final obj = {
+      "id": taskId,
+      "status": status,
+      "date": widget.date1.toIso8601String(),
+    };
+
+    final response = await http.put(
+      Uri.parse('$api/api/v1/task/updateStatus'),
+      body: jsonEncode(obj),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update task status');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    fetchTaskData().then((taskDataList) {
+      setState(() {
+        print(" at in :---=============$taskDataList");
+        this.taskList = taskDataList;
+      });
+    });
+  }
+
+  bool isChecked = false;
+  List<TaskData> taskList = [];
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          // Change background color based on isChecked
-          height: 50,
-          child: Row(
-            children: [
-              // Checkbox on the left
-              Checkbox(
-                hoverColor: Colors.blue,
-                value: isChecked,
-                onChanged: (bool? value) {
-                  // This is where we update the state when the checkbox is tapped
-                  setState(() {
-                    isChecked = value!;
-                  });
-                },
-              ),
-
-              // Bell icon
-              Expanded(
-                child: Container(
-                  color: isChecked ? Colors.black12 : Colors.black26,
-
-                  // Text for habit description
+    return FutureBuilder<List<TaskData>>(
+      future: fetchTaskData(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return SingleChildScrollView(
+            child: Column(
+              children: snapshot.data?.map((taskData) {
+                print(" at in :---=============${taskData}");
+                return Container(
+                  // Change background color based on status
+                  height: 50,
+                  color: taskData.status.isNotEmpty
+                      ? (taskData.status.last.done
+                      ? Colors.black12
+                      : Colors.black26)
+                      : Colors.black26,
                   child: Row(
                     children: [
-                      Icon(Icons.notifications),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text("My first habit", style: TextStyle(color: Colors.cyan,)),
-                          ),
-
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              "Finished",
-                              style: TextStyle(fontSize: 12, color: Colors.grey),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Spacer(),
-                      PopupMenuButton(
-                        itemBuilder: (context) {
-                          return [
-                            PopupMenuItem(
-                              child: Text("Edit"),
-                              value: "edit",
-                            ),
-                            PopupMenuItem(
-                              child: Text("Delete"),
-                              value: "delete",
-                            ),
-                          ];
-                        },
-                        onSelected: (String choice) {
-                          if (choice == "edit") {
-                            // Handle edit action
-                          } else if (choice == "delete") {
-                            // Handle delete action
-                          }
+                      // Checkbox on the left
+                      Checkbox(
+                        hoverColor: Colors.blue,
+                        value: taskData.status.isNotEmpty
+                            ? taskData.status.last.done
+                            : false,
+                        onChanged: (bool? value) {
+                          print("ooooooooooooooooooooooooooooooooooooooooooo ${taskData.status.isNotEmpty
+                              ? taskData.status.last.done
+                              : false}");
+                          setState(() {
+                            updateTaskStatus(
+                                taskData.id,
+                                value ?? false,
+                                DateTime.now()); // You can pass the current date here
+                          });
                         },
                       ),
+                      // Bell icon
+                      Expanded(
+                        child: Container(
+                          // Text for habit description
+                          child: Row(
+                            children: [
+                              Icon(Icons.notifications),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: Text(taskData.title,
+                                        style: TextStyle(color: Colors.cyan)),
+                                  ),
+                                  Align(
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      taskData.subTitle,
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Spacer(),
+                              PopupMenuButton(
+                                itemBuilder: (context) {
+                                  return [
+                                    PopupMenuItem(
+                                      child: Text("Edit"),
+                                      value: "edit",
+                                    ),
+                                    PopupMenuItem(
+                                      child: Text("Delete"),
+                                      value: "delete",
+                                    ),
+                                  ];
+                                },
+                                onSelected: (String choice) {
+                                  if (choice == "edit") {
+                                    // Handle edit action
+                                  } else if (choice == "delete") {
+                                    // Handle delete action
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Three-dot icon on the right for CRUD operations
                     ],
                   ),
-                ),
-              ),
-              // Three-dot icon on the right for CRUD operations
-            ],
-          ),
-        ),
-      ],
+                );
+              }).toList() ?? [], // Use an empty list as the default value if snapshot.data is null
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Text('Failed to fetch task data'),
+          );
+        } else {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
     );
   }
 }

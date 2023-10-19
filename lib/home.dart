@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:productivity_app/homeComponant/FetchHabit.dart';
+import 'package:productivity_app/homeComponant/createTask.dart';
 import 'package:productivity_app/homeComponant/myDateList.dart';
 import './const/Alldate.dart';
+
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -11,8 +13,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int appBarDay = DateTime.now().day;
+  DateTime date1=DateTime.now();
   List<DateTime> myDate = getDate();
-
 
   @override
   void initState() {
@@ -37,7 +39,13 @@ class _HomeState extends State<Home> {
             ),
             Row(
               children: [
-                Text("om"),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => CreateTaskPage()));
+                  },
+                  child: Text('Create Task'),
+                ),
+                // Text("om"),
               ],
             ),
           ],
@@ -47,24 +55,79 @@ class _HomeState extends State<Home> {
         child: Column(
           children: [
 
-            /*call another page*/
+
+            // Add  DateList widget below the x-axis labels.
             myDateList(
               myDate: myDate,
               appBarDay: appBarDay,
-              onAppBarDayChanged: (newAppBarDay) {
+              onAppBarDayChanged: (newAppBarDate) {
                 setState(() {
-                  appBarDay = newAppBarDay; // Update appBarDay in the Home widget.
+                  print("date changed");
+                  date1=newAppBarDate;
+                  appBarDay = date1.day;
+
                 });
               },
             ),
-            /*end call another page*/
-            Text("k: ${appBarDay}"),
-            FetchHabit(date1: appBarDay)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Add a Text widget for the "ALL" label.
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Add an Icon widget for the "ALL" label.
+                    Icon(Icons.list),
+                    Text("ALL"),
+
+                    // Add an Icon widget for the "Morning" label.
+                    Icon(Icons.sunny),
+                    Text("Morning"),
+
+                    // Add an Icon widget for the "Afternoon" label.
+                    Icon(Icons.cloud),
+                    Text("Afternoon"),
+
+                    // Add an Icon widget for the "Evening" label.
+                    Icon(Icons.nightlight),
+                    Text("Evening"),
+                  ],
+                ),
+
+              ],
+            ),
+            SizedBox(height: 10,),
+            FetchHabit(date1: date1),
 
           ],
         ),
+      ),
 
-        )
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          // Add a BottomNavigationBarItem for Today.
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Today',
+            // Add an onTap handler to the BottomNavigationBarItem.
+            // onTap: () {
+            //   // Navigate to the Today page.
+            // },
+          ),
+
+          // Add a BottomNavigationBarItem for History.
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history),
+            label: 'History',
+          ),
+
+          // Add a BottomNavigationBarItem for Account.
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: 'Account',
+          ),
+        ],
+      ),
     );
   }
 }

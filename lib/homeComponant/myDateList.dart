@@ -7,7 +7,7 @@ class myDateList extends StatefulWidget {
 
   final List<DateTime> myDate;
   final int appBarDay;
-  final ValueChanged<int> onAppBarDayChanged;
+  final ValueChanged<DateTime> onAppBarDayChanged;
 
   @override
   State<myDateList> createState() => _myDateListState();
@@ -39,7 +39,7 @@ class _myDateListState extends State<myDateList> {
                 setState(() {
                   selectedIndex = index;
                 });
-                widget.onAppBarDayChanged(date.day); // Call the callback function to update appBarDay value in the parent widget.
+                widget.onAppBarDayChanged(date); // Call the callback function to update appBarDay value in the parent widget.
                 print("Date item clicked: ${date.day}");
               },
               child: Padding(
