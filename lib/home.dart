@@ -3,6 +3,8 @@ import 'package:productivity_app/homeComponant/FetchHabit.dart';
 import 'package:productivity_app/homeComponant/createTask.dart';
 import 'package:productivity_app/homeComponant/myDateList.dart';
 import './const/Alldate.dart';
+import 'package:intl/intl.dart';
+
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,6 +16,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int appBarDay = DateTime.now().day;
   DateTime date1=DateTime.now();
+  // Format the month as 'jan', 'feb', etc.
+  String formattedMonth = DateFormat.MMM().format(DateTime.now()).toLowerCase();
   List<DateTime> myDate = getDate();
 
   @override
@@ -34,7 +38,8 @@ class _HomeState extends State<Home> {
             Column(
               children: [
                 Text('$appBarDay'),
-                // Text('${DateFormat")
+                
+                Text('$formattedMonth')
               ],
             ),
             Row(
@@ -65,7 +70,7 @@ class _HomeState extends State<Home> {
                   print("date changed");
                   date1=newAppBarDate;
                   appBarDay = date1.day;
-
+                  formattedMonth = DateFormat.MMM().format(date1).toLowerCase();
                 });
               },
             ),

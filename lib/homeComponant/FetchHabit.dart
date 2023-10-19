@@ -18,6 +18,8 @@ class FetchHabit extends StatefulWidget {
 
 class _FetchHabitState extends State<FetchHabit> {
   DateTime date1;
+
+
   _FetchHabitState({required this.date1});
 
   Future<List<TaskData>> fetchTaskData() async {
@@ -31,29 +33,53 @@ class _FetchHabitState extends State<FetchHabit> {
       body: jsonEncode(obj),
       headers: {'Content-Type': 'application/json'},
     );
-
+    // print("status data is ..00000000000000000000000000000000000000000000000000........${response.body}");
     if (response.statusCode == 200) {
       List<TaskData> taskDataList=[];
       var  data = jsonDecode(response.body)['tasks'];
+      bool data11 = jsonDecode(response.body)['again'];
 
-      print(data);
+      if(data11){
+        await fetchTaskData();
+        setState(() {
+
+        });
+      }
+
+      print("pppppppppppppppppppppppppppp $data11");
+      // if(data1?.isEmpty()){
+      //   print("----------------------null---------------------");
+      // }
       try {
       data.forEach((ele){
         List<TaskStatus> ts=[];
         try {
-           ts.add( (ele["status"]));
-        }catch(e){
-          print("e r r $e");
+
+          try {
+            for(int i=0;i<ele["status"].length;i++) {
+              ts.add(TaskStatus(
+                date: ele["status"][i]["date"],
+                done: ele["status"][i]["done"],
+                id: ele["status"][i]["_id"],
+              ));
+            }
+            print("status is: ${ele["status"]}");
+          } catch (e) {
+            print("e r r $e");
+          }
+        } catch (e) {
+          print("Outer error: $e");
         }
-          TaskData t=TaskData(id: ele["_id"],
+
+        TaskData t=TaskData(id: ele["_id"],
               title: ele["title"],
               subTitle: ele["subTitle"],
               dateTime: ele["dateTime"],
               status: ts,
               scheduleType: ele["scheduleType"],
-
               selectedDateText: ele["selectedDateText"],
               user: ele["user"]);
+        print("----------------------------------- ${t.status.length}  ${t.title}");
           taskDataList.add(t);
       });
 
@@ -115,7 +141,6 @@ class _FetchHabitState extends State<FetchHabit> {
           return SingleChildScrollView(
             child: Column(
               children: snapshot.data?.map((taskData) {
-                print(" at in :---=============${taskData}");
                 return Container(
                   // Change background color based on status
                   height: 50,
@@ -133,9 +158,7 @@ class _FetchHabitState extends State<FetchHabit> {
                             ? taskData.status.last.done
                             : false,
                         onChanged: (bool? value) {
-                          print("ooooooooooooooooooooooooooooooooooooooooooo ${taskData.status.isNotEmpty
-                              ? taskData.status.last.done
-                              : false}");
+                          print("oooooooooooooooooooooooooooooooooooooooooo ${taskData.status}");
                           setState(() {
                             updateTaskStatus(
                                 taskData.id,

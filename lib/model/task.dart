@@ -28,7 +28,7 @@ class TaskData {
 
 
 class TaskStatus {
-  final DateTime ? date;
+  final String ? date;
   final bool done;
   final String ?id;
 
