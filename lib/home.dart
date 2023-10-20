@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:productivity_app/chart/chart.dart';
 import 'package:productivity_app/homeComponant/FetchHabit.dart';
 import 'package:productivity_app/homeComponant/createTask.dart';
 import 'package:productivity_app/homeComponant/myDateList.dart';
+import 'package:productivity_app/model/task.dart';
 import './const/Alldate.dart';
 import 'package:intl/intl.dart';
 
@@ -30,6 +32,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    int _currentIndex = 0;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -109,6 +112,7 @@ class _HomeState extends State<Home> {
       ),
 
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
         items: [
           // Add a BottomNavigationBarItem for Today.
           BottomNavigationBarItem(
@@ -124,6 +128,7 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'History',
+
           ),
 
           // Add a BottomNavigationBarItem for Account.
@@ -131,8 +136,39 @@ class _HomeState extends State<Home> {
             icon: Icon(Icons.account_circle),
             label: 'Account',
           ),
+
         ],
+
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index; // Update the current tab index.
+          });
+
+          if (index == 1) {
+            // Navigate to the TaskStatusChart screen when "History" tab is selected.
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) =>TaskStatusChart(taskDataList: taskDataList,)),
+            );
+          }
+        },
       ),
     );
   }
 }
+
+
+final List<TaskData> taskDataList = [
+
+  TaskData(
+    id: '2',
+    title: 'Task 2',
+    subTitle: 'Subtask 2',
+    dateTime: '2023-10-21',
+    status: [
+      TaskStatus(date: '2023-10-21', done: true, id: '3'),
+    ],
+    user: 'User 2',
+  ),
+  // Add more TaskData instances with different dates and statuses as needed.
+];

@@ -34,7 +34,7 @@ class _RegisterState extends State<Register> {
 
       // Send the form data to  backend server for registration
       final response = await http.post(
-        Uri.parse('$api/signup/'),
+        Uri.parse('$api/api/v1/user/signup'),
         body: jsonEncode({
           "name": firstNameValue,
           "email": emailValue,
@@ -51,7 +51,7 @@ class _RegisterState extends State<Register> {
         setState(() {
           _registrationMsg = 'Registration failed'; // Set the validation message
         });
-        print('Registration failed');
+        print('Registration failed ${response.body}');
         return response.statusCode;
       }
     } catch (error) {

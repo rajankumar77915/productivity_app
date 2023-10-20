@@ -18,7 +18,7 @@ class FetchHabit extends StatefulWidget {
 
 class _FetchHabitState extends State<FetchHabit> {
   DateTime date1;
-
+  bool data11=false;
 
   _FetchHabitState({required this.date1});
 
@@ -37,14 +37,8 @@ class _FetchHabitState extends State<FetchHabit> {
     if (response.statusCode == 200) {
       List<TaskData> taskDataList=[];
       var  data = jsonDecode(response.body)['tasks'];
-      bool data11 = jsonDecode(response.body)['again'];
+       data11 = jsonDecode(response.body)['again'];
 
-      if(data11){
-        await fetchTaskData();
-        setState(() {
-
-        });
-      }
 
       print("pppppppppppppppppppppppppppp $data11");
       // if(data1?.isEmpty()){

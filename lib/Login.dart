@@ -30,7 +30,7 @@ class _SignInState extends State<SignIn> {
     final passwordd   = password.text.toString();
     // Send the email and password to your backend server for validation
     final response = await http.post(
-      Uri.parse('$api/login/'),
+      Uri.parse('$api/api/v1/user/login'),
       body: jsonEncode({"email":email1 , "password":passwordd}),
       headers: {'Content-Type': 'application/json'},
     );
