@@ -4,26 +4,35 @@ import 'package:http/http.dart' as http;
 import 'package:productivity_app/env.dart';
 import 'package:productivity_app/home.dart';
 
-class CreateTaskPage extends StatefulWidget {
+class UpdateTaskPage extends StatefulWidget {
   final user_id;
-  const CreateTaskPage({super.key,required this.user_id});
+  final String taskId; // Pass the task ID of the task to be updated
+  final String title;
+  final String subtitle;
+  final String selectedScheduleType;
+  final List<String> selectedDayOfWeeks;
+  UpdateTaskPage({required this.taskId,required this.title,required this.selectedScheduleType,required this.subtitle,required this.selectedDayOfWeeks, required this.user_id});
+
   @override
-  _CreateTaskPageState createState() => _CreateTaskPageState(user_id:user_id);
+  _UpdateTaskPageState createState() => _UpdateTaskPageState(taskId: taskId,title: title,subtitle: subtitle,selectedScheduleType: selectedScheduleType,selectedDayOfWeeks: selectedDayOfWeeks);
 }
 
-class _CreateTaskPageState extends State<CreateTaskPage> {
-  final user_id;
-  _CreateTaskPageState({required this.user_id});
+class _UpdateTaskPageState extends State<UpdateTaskPage> {
   TextEditingController titleController = TextEditingController();
   TextEditingController subTitleController = TextEditingController();
-  List<String> selectedDayOfWeeks = [];
-  String selectedScheduleType = "daily"; // Default value
+  //
+  List<String> selectedDayOfWeeks;
+  final String taskId; // Pass the task ID of the task to be updated
+  final String title;
+  final String subtitle;
+  //
+  String selectedScheduleType ;
   String selectedDayOfWeek = "Sunday"; // Default value for weekly
   String selectedDayOfMonth = "1"; // Default value for monthly
   DateTime selectDate = DateTime.now();
-  String selectedDateText = ""; // To display the selected date
+  String selectedDateText = ""; // To display selected date
   DateTime selectedDate = DateTime.now(); // To store the selected date
-
+  _UpdateTaskPageState({required this.taskId,required this.title, required this.subtitle,required this.selectedScheduleType,required this.selectedDayOfWeeks});
   List<String> taskSuggestions = [
     "Complete Project",
     "Finish coding for the project",
@@ -52,35 +61,34 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
     }
   }
 
-  Future<void> createTask(String title, String subTitle) async {
-    print("creating...");
+  Future<void> updateTask(String title, String subTitle) async {
     final obj = {
-      "userId":  user_id,
       "title": title,
       "subTitle": subTitle,
       "status": false,
       "scheduleType": selectedScheduleType,
       "dayOfWeek": selectedDayOfWeeks, // Add selected day for weekly
       "dayOfMonth": selectedDayOfMonth, // Add selected day for monthly
-      "selectedDateText": selectedDateText
+      "selectedDateText": selectedDateText,
     };
-
-    final response = await http.post(
-      Uri.parse('$api/api/v1/task/createTask'),
+    final response = await http.put(
+      Uri.parse('$api/api/v1/task/updateTaskall/${taskId}'), // Use the task ID for updating
       body: jsonEncode(obj),
       headers: {'Content-Type': 'application/json'},
     );
-
     print(response.body);
 
     if (response.statusCode == 200) {
-      // Task created successfully
-      Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context) => Home(user_id: user_id)),
+      // Task updated successfully
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Home(user_id: widget.user_id),
+        ),
       );
+
     } else {
-      print("object");
-      throw Exception('Failed to create the task');
+      throw Exception('Failed to update the task');
     }
   }
 
@@ -88,30 +96,20 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create New Task'),
+        title: Text('Update Task'),
       ),
-      backgroundColor: Colors.blueGrey,
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
-              controller: titleController,
-              decoration: InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
-                hoverColor: Colors.red
-              ),
-              style: TextStyle(color: Colors.black),
+              controller: titleController..text= title,
+              decoration: InputDecoration(labelText: 'Title'),
+
             ),
-            SizedBox(height: 16),
             TextField(
-              controller: subTitleController,
-              decoration: InputDecoration(
-                labelText: 'SubTitle',
-                border: OutlineInputBorder(),
-              ),
+              controller: subTitleController..text=subtitle,
+              decoration: InputDecoration(labelText: 'SubTitle'),
             ),
             SizedBox(height: 16),
             DropdownButton<String>(
@@ -129,6 +127,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 );
               }).toList(),
             ),
+            // Weekly scheduling
             if (selectedScheduleType == "weekly")
               Stack(
                 children: [
@@ -156,7 +155,8 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                   ),
                 ],
               ),
-            if (selectedScheduleType == "monthly")
+            if (selectedScheduleType == "monthly") // Show the dropdown for monthly
+            // Show the dropdown for monthly
               DropdownButton<String>(
                 value: selectedDayOfMonth,
                 onChanged: (String? newValue) {
@@ -176,6 +176,7 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
               onPressed: _openCalendar,
               child: Text('Choose Starting Date'),
             ),
+            // Display selected date
             Text(selectedDateText),
             SizedBox(height: 16),
             ElevatedButton(
@@ -184,14 +185,14 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
                 final subTitle = subTitleController.text;
 
                 if (title.isNotEmpty && subTitle.isNotEmpty) {
-                  createTask(title, subTitle);
+                  updateTask(title, subTitle);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text('Please fill out all fields.'),
                   ));
                 }
               },
-              child: Text('Create Task'),
+              child: Text('Update Task'),
             ),
             Text("Select a Task"),
             SizedBox(height: 16),
@@ -214,7 +215,6 @@ class _CreateTaskPageState extends State<CreateTaskPage> {
           ],
         ),
       ),
-
     );
   }
 }

@@ -50,12 +50,12 @@ class _myDateListState extends State<myDateList> {
                       "\n${DateFormat.E().format(date)}",
                       style: TextStyle(
                         fontSize: 20,
-                        color: isSelected ? Colors.blue : Colors.black,
+                        color: isSelected ? Colors.redAccent : Colors.grey,
                       ),
                     ),
                     Text(
                       "${date.day < 10 ? "0${date.day}" : "${date.day}"}",
-                      style: TextStyle(fontSize: 18),
+                      style: TextStyle(fontSize: 18,color: Colors.cyan),
                     ),
                   ],
                 ),

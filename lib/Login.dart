@@ -2,8 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:productivity_app/env.dart';
 import 'package:productivity_app/home.dart';
+import 'package:productivity_app/main.dart';
 import 'Register.dart';
 import 'package:http/http.dart' as http;
 
@@ -24,6 +26,7 @@ class _SignInState extends State<SignIn> {
   var showPassword = true;
   var email = TextEditingController();
   var password = TextEditingController();
+  var user_Id;
   Future<int> _submitForm() async {
     // Form is valid, perform login
     final email1 = email.text.toString();
@@ -36,6 +39,16 @@ class _SignInState extends State<SignIn> {
     );
 
     if (response.statusCode == 200) {
+      final storage = FlutterSecureStorage();
+      final Dres=jsonDecode(response.body);
+      final existUser = Dres['existUser'];
+      final username = existUser['name'];
+      print("user name is : $username \n");
+       user_Id = existUser['_id'];
+      await storage.write(key: 'email', value: email1);
+      await storage.write(key: 'password', value: passwordd);
+      await storage.write(key: 'user_id', value: user_Id);
+      await storage.write(key: 'username', value: username);
       return 1;
     } else {
       // Login failed
@@ -220,11 +233,13 @@ class _SignInState extends State<SignIn> {
                             onTap: () async {
 
                               try{
-                                int? response = await _submitForm();
 
+                                int? response = await _submitForm();
+                                print("----------------------omomomom $response");
                                 if(response == 1)
                                 {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context){ return Home();}));
+
+                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context){ return Home(user_id: user_Id);}));
                                 }
                                 else if(response == 400)
                                 {
@@ -289,6 +304,7 @@ class _SignInState extends State<SignIn> {
                               }
                               catch(e)
                               {
+                                print("-------------------------er");
                                 print(e.toString());
                                 Navigator.push(context, MaterialPageRoute(builder: (context) => Register()));
                               }

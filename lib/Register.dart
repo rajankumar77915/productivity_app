@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:productivity_app/Login.dart';
 import 'package:productivity_app/env.dart';
 import 'package:productivity_app/home.dart';
 
@@ -24,13 +25,14 @@ class _RegisterState extends State<Register> {
   var showPassword = false;
   var iconChange = Icons.remove_red_eye;
   String _registrationMsg = "";
-
+  var user_id;
   Future<int> _submitForm() async {
     try {
       // Extract text from controllers
       final firstNameValue = userName.text.toString();
       final emailValue = email.text.toString();
       final passwordValue = password.text.toString();
+
 
       // Send the form data to  backend server for registration
       final response = await http.post(
@@ -45,6 +47,11 @@ class _RegisterState extends State<Register> {
 
       if (response.statusCode == 200) {
         // Registration successful
+        final Dres=jsonDecode(response.body);
+        final user=Dres["data"];
+        user_id=user['_id'];
+
+        print("$user_id");
         return 1;
       } else {
         // Registration failed
@@ -337,7 +344,7 @@ class _RegisterState extends State<Register> {
                             if (response == 1) {
                               Navigator.push(context,
                                   MaterialPageRoute(builder: (context) {
-                                    return Home();
+                                    return SignIn();
                                   }));
                             } else if (response == 500) {
                               return showDialog(

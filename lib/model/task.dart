@@ -4,7 +4,7 @@ class TaskData {
   final String subTitle;
   final String dateTime;
   final List<TaskStatus> status;
-  final String ? scheduleType;
+  final String  scheduleType;
   // final List<String> ?dayOfWeek;
   // final String dayOfMonth;
   final String ?selectedDateText;
@@ -16,7 +16,7 @@ class TaskData {
     required this.subTitle,
     required this.dateTime,
     required this.status,
-     this.scheduleType,
+    required this.scheduleType,
     //  this.dayOfWeek,
     // required this.dayOfMonth,
      this.selectedDateText,

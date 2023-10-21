@@ -1,211 +1,131 @@
-import 'dart:math';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:productivity_app/model/task.dart';
+import 'dart:async';
 
-class TaskStatusChart extends StatefulWidget {
-  final List<TaskData> taskDataList;
+void main() => runApp(MyApp());
 
-  TaskStatusChart({required this.taskDataList});
-
+class MyApp extends StatelessWidget {
   @override
-  _TaskStatusChartState createState() => _TaskStatusChartState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Pomodoro Timer',
+      theme: ThemeData(
+        primaryColor: Colors.teal,
+        hintColor: Colors.tealAccent,
+        fontFamily: 'Montserrat',
+      ),
+      home: PomodoroTimer(),
+    );
+  }
 }
 
-class _TaskStatusChartState extends State<TaskStatusChart> {
-  int touchedIndex = -1;
-  bool isPlaying = false;
+class PomodoroTimer extends StatefulWidget {
+  @override
+  _PomodoroTimerState createState() => _PomodoroTimerState();
+}
+
+class _PomodoroTimerState extends State<PomodoroTimer> {
+  int workDuration = 1; // Work duration in minutes
+  int breakDuration = 1; // Break duration in minutes
+  bool isWorking = true;
+  late Timer _timer;
+  int _currentMinutes = 25;
+  int _currentSeconds = 0;
+  int completedPomodoros = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentMinutes = workDuration;
+  }
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        setState(() {
+          if (_currentSeconds == 0) {
+            if (_currentMinutes == 0) {
+              if (isWorking) {
+                _currentMinutes = breakDuration;
+              } else {
+                _currentMinutes = workDuration;
+                completedPomodoros++;
+                setState(() {});
+              }
+              isWorking = !isWorking;
+            } else {
+              _currentMinutes -= 1;
+            }
+            _currentSeconds = 59;
+          } else {
+            _currentSeconds -= 1;
+          }
+        });
+      },
+    );
+  }
+
+  void stopTimer() {
+    if (_timer != null && _timer.isActive) {
+      _timer.cancel();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Material(child: AspectRatio(
-      aspectRatio: 1,
-      child: Column(
-        children: <Widget>[
-          const Text(
-            'Weekly',
-            style: TextStyle(
-              color: Colors.green,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Task Completion Chart',
-            style: TextStyle(
-              color: Colors.green.shade700,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 38),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: BarChart(
-                isPlaying ? randomData() : mainBarData(),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              icon: Icon(
-                isPlaying ? Icons.pause : Icons.play_arrow,
-                color: Colors.green,
-              ),
-              onPressed: () {
-                setState(() {
-                  isPlaying = !isPlaying;
-                  if (isPlaying) {
-                    refreshState();
-                  }
-                });
-              },
-            ),
-          ),
-        ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Pomodoro Timer'),
       ),
-    ),);
-  }
-
-  BarChartGroupData makeGroupData(
-      int x, double y, bool isTouched, double width, List<int> showTooltips) {
-    final barColor = Colors.white;
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: isTouched ? y + 1 : y,
-          color: isTouched ? Colors.green : barColor,
-          width: width,
-          borderSide: isTouched
-              ? BorderSide(color: Colors.green.shade700.withOpacity(0.8))
-              : BorderSide.none,
-          backDrawRodData: BackgroundBarChartRodData(
-            show: true,
-            toY: 20,
-            color: Colors.grey.withOpacity(0.3),
-          ),
-        ),
-      ],
-      showingTooltipIndicators: showTooltips,
-    );
-  }
-  final List<num>yValues = [5, 6.5, 5, 7.5, 9, 11.5, 6.5];
-  List<BarChartGroupData> showingGroups() => List.generate(7, (i) {
-
-    return makeGroupData(i, i+5, i == touchedIndex, 22, []);
-  });
-
-  BarChartData mainBarData() {
-    return BarChartData(
-      barTouchData: BarTouchData(
-        touchTooltipData: BarTouchTooltipData(
-          tooltipBgColor: Colors.blueGrey,
-          tooltipHorizontalAlignment: FLHorizontalAlignment.right,
-          tooltipMargin: -10,
-          getTooltipItem: (group, groupIndex, rod, rodIndex) {
-            final days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-            return BarTooltipItem(
-              '${days[group.x]}\n',
-              TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-              children: <TextSpan>[
-                TextSpan(
-                  text: (rod.toY - 1).toString(),
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              isWorking ? 'Work Time' : 'Break Time',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            Text(
+              '$_currentMinutes:${_currentSeconds.toString().padLeft(2, '0')}',
+              style: TextStyle(fontSize: 72, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                ElevatedButton(
+                  onPressed: startTimer,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
                   ),
+                  child: Text('Start', style: TextStyle(fontSize: 20)),
+                ),
+                SizedBox(width: 20),
+                ElevatedButton(
+                  onPressed: stopTimer,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                  ),
+                  child: Text('Stop', style: TextStyle(fontSize: 20)),
                 ),
               ],
-            );
-          },
-        ),
-        touchCallback: (FlTouchEvent event, barTouchResponse) {
-          setState(() {
-            if (!event.isInterestedForInteractions ||
-                barTouchResponse == null ||
-                barTouchResponse.spot == null) {
-              touchedIndex = -1;
-              return;
-            }
-            touchedIndex = barTouchResponse.spot!.touchedBarGroupIndex;
-          });
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            getTitlesWidget: getTitles,
-            reservedSize: 38,
-          ),
-        ),
-        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      ),
-      borderData: FlBorderData(show: false),
-      barGroups: showingGroups(),
-      gridData: FlGridData(show: false),
-    );
-  }
-
-  Widget getTitles(double value, TitleMeta meta) {
-    final days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      space: 16,
-      child: Text(
-        days[value.toInt()],
-        style: TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
+            ),
+            SizedBox(height: 40),
+            Text(
+              'Completed Pomodoros: $completedPomodoros',
+              style: TextStyle(fontSize: 18),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  BarChartData randomData() {
-    return BarChartData(
-      barTouchData: BarTouchData(enabled: false),
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            getTitlesWidget: getTitles,
-            reservedSize: 38,
-          ),
-        ),
-        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-      ),
-      borderData: FlBorderData(show: false),
-      barGroups: List.generate(7, (i) {
-        final randomValue = Random().nextInt(15).toDouble() + 6;
-        return makeGroupData(i, randomValue, false, 22, []);
-      }),
-      gridData: FlGridData(show: false),
-    );
-  }
-
-  Future<void> refreshState() async {
-    setState(() {});
-    await Future.delayed(const Duration(milliseconds: 300) + const Duration(milliseconds: 50));
-    if (isPlaying) {
-      await refreshState();
-    }
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
   }
 }
