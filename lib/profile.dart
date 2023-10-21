@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:productivity_app/Login.dart';
 import 'package:productivity_app/env.dart';
 import 'package:http/http.dart' as http;
 
@@ -73,6 +74,15 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
+  Future<void> logout() async {
+    final storage = FlutterSecureStorage();
+    await storage.deleteAll(); // Clear all stored data
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => SignIn()),
+          (Route<dynamic> route) => false, // Clear the navigation stack
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +93,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           IconButton(
             icon: Icon(Icons.exit_to_app),
             onPressed: () {
-              // Handle logout logic
+              logout();
             },
           ),
         ],
@@ -94,12 +104,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Image.asset(
-              //   'assets/shoes/nike.png',
-              //   width: 100,
-              //   height: 100,
-              // ),
-              SizedBox(height: 20),
               Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
